@@ -1,122 +1,57 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using FA.Domain.Entities;
-using FA.Infrastructure.Context;
 using FA.Application.Dtos.Categories;
 using AutoMapper;
-using FA.Domain.Enumerations;
-using System.Security.Claims;
 using FA.Application.Services;
+using FA.Domain.Enumerations;
+using FA.Domain.Entities;
+using FA.Application.Dtos.BaseDtos;
+using System.Security.Claims;
 
 namespace WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class CategoriesController : ControllerBase
+public class CategorysController : GenericController<Category, RequestCategoryDto, ResponseCategoryDto>
 {
     private readonly AuthorizerService _authorizerService;
-    private readonly MainDbContext _context;
-    private readonly IMapper _mapper;
+    private string? UserRole => User.FindFirst(ClaimTypes.Role)?.Value;
 
-    public CategoriesController(AuthorizerService authorizeService, MainDbContext context, IMapper mapper)
+    public CategorysController(AuthorizerService authorizerService, CategoryService CategoryService) : base(CategoryService)
     {
-        _authorizerService = authorizeService;
-        _context = context;
-        _mapper = mapper;
+        _authorizerService = authorizerService;
     }
 
-
-
-    // GET: api/Categories
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<GeneralResponseCategoryDto>>> GetCategories()
+    public override async Task<ActionResult<PageResultDto<ResponseCategoryDto>>> GetsAsync(int page = 1, int pageSize = 10)
     {
-        string? userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-        if (_authorizerService.HasPermission(userRole, ModuleAction.Category.Index)) return Forbid();
-
-        List<Category> Categories = await _context.Categories.Where(Category => !Category.IsDeleted).ToListAsync();
-        var CategoryDtos = _mapper.Map<IEnumerable<GeneralResponseCategoryDto>>(Categories);
-        return Ok(CategoryDtos);
+        if (!_authorizerService.HasPermission(UserRole, ModuleAction.IndexCategory)) return Forbid();
+        return await base.GetsAsync(page, pageSize);
     }
 
-    
-
-    // GET: api/Categories/5
-    [HttpGet("{id}")]
-    public async Task<ActionResult<DetailedResponseCategoryDto>> GetCategory(Guid id)
+    public override async Task<ActionResult<ResponseCategoryDto>> GetAsync(Guid id)
     {
-        string? userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-        if (_authorizerService.HasPermission(userRole, ModuleAction.Category.Details)) return Forbid();
-
-        Category? Category = await _context.Categories.FirstOrDefaultAsync(Category => Category.Id == id && !Category.IsDeleted);
-        if (Category == null)
-        {
-            return NotFound();
-        }
-
-        var CategoryDto = _mapper.Map<DetailedResponseCategoryDto>(Category);
-        return Ok(CategoryDto);
+        if (!_authorizerService.HasPermission(UserRole, ModuleAction.DetailsCategory)) return Forbid();
+        return await base.GetAsync(id);
     }
 
-    // POST: api/Categories
-    [HttpPost]
-    public async Task<ActionResult> PostCategory(RequestCategoryDto CategoryDto)
+    public override async Task<ActionResult> PostAsync([FromBody] RequestCategoryDto requestTDto)
     {
-        string? userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-        if (_authorizerService.HasPermission(userRole, ModuleAction.Category.Create)) return Forbid();
+        if (!_authorizerService.HasPermission(UserRole, ModuleAction.CreateCategory)) return Forbid();
+        if (string.IsNullOrWhiteSpace(requestTDto.Name)) return BadRequest();
 
-        Category Category = _mapper.Map<Category>(CategoryDto);
-        _context.Categories.Add(Category);
-        int affectedRows = await _context.SaveChangesAsync();
-        if (affectedRows > 0)
-        {
-            return Created();
-        }
-        return BadRequest();
+        return await base.PostAsync(requestTDto);
     }
 
-    // PUT: api/Categories/5
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutCategory(Guid id, RequestCategoryDto CategoryDto)
+    public override async Task<IActionResult> PutAsync(Guid id, [FromBody] RequestCategoryDto requestTDto)
     {
-        string? userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-        if (_authorizerService.HasPermission(userRole, ModuleAction.Category.Update)) return Forbid();
+        if (!_authorizerService.HasPermission(UserRole, ModuleAction.UpdateCategory)) return Forbid();
+        if (string.IsNullOrWhiteSpace(requestTDto.Name)) return BadRequest();
 
-        var Category = await _context.Categories.FindAsync(id);
-        if (Category == null)
-        {
-            return NotFound();
-        }
-
-        _mapper.Map(CategoryDto, Category);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            return Conflict();
-        }
+        return await base.PutAsync(id, requestTDto);
     }
 
-    // DELETE: api/Categories/5
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteCategory(Guid id)
+    public override async Task<IActionResult> DeleteAsync(Guid id)
     {
-        string? userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-        if (_authorizerService.HasPermission(userRole, ModuleAction.Category.Delete)) return Forbid();
-
-        var Category = await _context.Categories.FirstOrDefaultAsync(Category => Category.Id == id && !Category.IsDeleted);
-        if (Category == null)
-        {
-            return NotFound();
-        }
-
-        Category.IsDeleted = true;
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        if (!_authorizerService.HasPermission(UserRole, ModuleAction.DeleteCategory)) return Forbid();
+        return await base.DeleteAsync(id);
     }
 }

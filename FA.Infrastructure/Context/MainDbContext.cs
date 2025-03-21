@@ -1,4 +1,6 @@
 ﻿using FA.Domain.Entities;
+using FA.Domain.Interfaces;
+using FA.Infrastructure.Configurations;
 using Microsoft.EntityFrameworkCore;
 
 namespace FA.Infrastructure.Context;
@@ -19,12 +21,12 @@ public class MainDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Blog>().ToTable(nameof(Blog));
-        modelBuilder.Entity<Category>().ToTable(nameof(Category));
-        modelBuilder.Entity<Post>().ToTable(nameof(Post));
-        modelBuilder.Entity<Tag>().ToTable(nameof(Tag));
-        modelBuilder.Entity<Comment>().ToTable(nameof(Comment));
-        modelBuilder.Entity<User>().ToTable(nameof(User));
+        modelBuilder.ApplyConfiguration(new BlogConfiguration());
+        modelBuilder.ApplyConfiguration(new CategoryConfiguration());
+        modelBuilder.ApplyConfiguration(new CommentConfiguration());
+        modelBuilder.ApplyConfiguration(new PostConfiguration());
+        modelBuilder.ApplyConfiguration(new TagConfiguration());
+        modelBuilder.ApplyConfiguration(new UserConfiguration());
     }
 
     public override int SaveChanges()
@@ -44,32 +46,13 @@ public class MainDbContext : DbContext
         AddTimestamps();
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
-
-    //private void AddTimestamps()
-    //{
-    //    var entities = ChangeTracker.Entries()
-    //        .Where(x => x.Entity is BaseEntity && (x.State == EntityState.Added || x.State == EntityState.Modified));
-
-    //    foreach (var entity in entities)
-    //    {
-    //        var now = DateTime.UtcNow; // current datetime
-
-    //        if (entity.State == EntityState.Added)
-    //        {
-    //            ((BaseEntity)entity.Entity).CreatedAt = now;
-    //        }
-    //        ((BaseEntity)entity.Entity).UpdatedAt = now;
-    //    }
-    //}
-
     private void AddTimestamps()
     {
-        var entries = ChangeTracker.Entries<BaseEntity>();
+        var entries = ChangeTracker.Entries<IMetadata>();
         foreach (var entry in entries)
         {
             if (entry.State == EntityState.Added)
             {
-                entry.Entity.Id = Guid.NewGuid();
                 entry.Entity.CreatedAt = DateTime.UtcNow;
                 entry.Entity.UpdatedAt = DateTime.UtcNow;
             }

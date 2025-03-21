@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using FA.Domain.Entities;
-using FA.Infrastructure.Context;
-using FA.Application.Dtos.Account;
-using AutoMapper;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using FA.Application.Dtos.Accounts;
+using FA.Application.Services;
 
 namespace WebApi.Controllers;
 
@@ -15,69 +13,39 @@ namespace WebApi.Controllers;
 [ApiController]
 public class AuthenticationController : ControllerBase
 {
-    private readonly MainDbContext _context;
-    private readonly IMapper _mapper;
+    private readonly UserService _userService;
     private readonly IConfiguration _configuration;
 
-    public AuthenticationController(MainDbContext context, IMapper mapper, IConfiguration configuration)
+    public AuthenticationController(UserService userService, IConfiguration configuration)
     {
-        _context = context;
-        _mapper = mapper;
+        _userService = userService;
         _configuration = configuration;
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult> Login(AccountDto accountDto)
+    public async Task<ActionResult> Login(LoginDto loginDto)
     {
-        try
-        {
-            // find user with given username
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.Username == accountDto.Username);
-            
-            // not found or wrong password
-            if (user == null || !BCrypt.Net.BCrypt.Verify(accountDto.Password, user.Password))
-            {
-                return Unauthorized();
-            }
+        // find user with given username
+        User? user = await _userService.FindUserAsync(loginDto);
 
-            return Ok(GenerateToken(user));
-        }
-        catch (InvalidOperationException)
-        {
-            // database broken: multiple user with same username
-            return StatusCode(500, "Multiple users found.");
-        }
-        catch (Exception)
-        {
-            return StatusCode(500);
-        }
+        // not found or wrong password
+        if (user is null) return NotFound();
+        return Ok(GenerateToken(user));
     }
 
     [HttpPost("register")]
-    public async Task<ActionResult> Register(AccountDto accountDto)
+    public async Task<ActionResult> Register(RegisterDto registerDto)
     {
         try
         {
             // if username already used
-            bool existed = await _context.Users.AnyAsync(u => u.Username == accountDto.Username);
-            if (existed)
-            {
-                return Conflict();
-            }
+            bool existed = await _userService.AnyAsync(registerDto.Username);
+            if (existed) return Conflict();
 
-            User user = _mapper.Map<User>(accountDto);
-            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-            return Ok(GenerateToken(user));
+            User user = await _userService.RegisterAsync(registerDto);
+            return Created(string.Empty, GenerateToken(user)); 
         }
-        catch (InvalidOperationException)
-        {
-            // database broken: multiple user with same username
-            return StatusCode(500, "Multiple users found.");
-        }
-        catch (Exception)
+        catch
         {
             return StatusCode(500);
         }
@@ -93,7 +61,7 @@ public class AuthenticationController : ControllerBase
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Role, user.Roles[0].ToString())
+                new Claim(ClaimTypes.Role, user.Role.ToString())
             }),
             Expires = DateTime.UtcNow.AddHours(1),
             //Issuer = _configuration["JwtSettings:Issuer"],

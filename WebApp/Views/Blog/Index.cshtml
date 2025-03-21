@@ -1,0 +1,95 @@
+﻿@using FA.Application.Dtos.BaseDtos
+@using FA.Application.Dtos.Blogs
+@using FA.Application.Dtos.Categories
+@using FA.Domain.Enumerations
+@using System.Security.Claims
+@using WebApp.Controllers
+@using WebApp.Services
+@model PageResultDto<ResponseCategoryDto>
+@inject AuthorizerService authorizerService
+
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+
+<!-- Page Header-->
+<header class="masthead" style="background-image: url('assets/img/home-bg.jpg')">
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="site-heading">
+                    <h1>Bloggggs</h1>
+                    <span class="subheading">Here you can find all the blogs.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main Content-->
+<div class="container px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-7">
+
+            <!-- Real Content-->
+
+            @* @Html.DisplayNameFor(model => model.Page) *@
+            @* @Html.DisplayFor(model => model.Page) *@
+
+            @* @Html.DisplayNameFor(model => model.PageSize) *@
+            @* @Html.DisplayFor(model => model.PageSize) *@
+
+            @* @Html.DisplayNameFor(model => model.TotalItem) *@
+            @* @Html.DisplayFor(model => model.TotalItem) *@
+
+            @* @Html.DisplayNameFor(model => model.TotalPage) *@
+            @* @Html.DisplayFor(model => model.TotalPage) *@
+
+            @* @Html.DisplayNameFor(model => model.Page) *@
+            @* @Html.DisplayFor(model => model.Page) *@
+
+            @if (authorizerService.HasPermission(User.FindFirst(ClaimTypes.Role)?.Value, ModuleAction.CreateBlog))
+            {
+                <p>
+                    <a asp-action="Create">New</a>
+                </p>
+            }
+
+            @foreach(var item in Model.Items)
+            {
+                <!-- Post preview-->
+                <div class="post-preview">
+                    <a href="post.html">
+                        <h2 class="post-title">@item.Name</h2>
+                        @* <h3 class="post-subtitle">Problems look mighty small from 150 miles up</h3> *@
+                    </a>
+                    <p class="post-meta">
+                        Posted by
+                        <a href="#!">@item.CreatedBy</a>
+                        on @item.CreatedAt
+                    </p>
+                </div>
+                <!-- Action -->
+                @if (authorizerService.HasPermission(User.FindFirst(ClaimTypes.Role)?.Value, ModuleAction.DetailsBlog))
+                {
+                    @Html.ActionLink("\u2139", nameof(BlogController.Details), new { id = item.Id })
+                }
+
+                @if (authorizerService.HasPermission(User.FindFirst(ClaimTypes.Role)?.Value, ModuleAction.UpdateBlog))
+                {
+                    @Html.ActionLink("\u270E", nameof(BlogController.Edit), new { id = item.Id })
+                }
+
+                @if (authorizerService.HasPermission(User.FindFirst(ClaimTypes.Role)?.Value, ModuleAction.DeleteBlog))
+                {
+                    @Html.ActionLink("\u274C", nameof(BlogController.Delete), new { id = item.Id })
+                }
+                <!-- Divider-->
+                <hr class="my-4">
+            }
+            <!-- End of Real Content-->
+
+        </div>
+    </div>
+</div>
