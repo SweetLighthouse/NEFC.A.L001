@@ -1,19 +1,15 @@
-﻿using FA.Domain.Interfaces;
-using FA.Domain.Interfaces.Entities;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FA.Domain.Entities;
 
-public class Comment : IId, IMetadata, IComment, IIsDeleted
+[Table(nameof(Comment))]
+public class Comment : BaseEntity
 {
-    public Guid Id { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public Guid CreatedBy { get; set; }
-    public DateTime UpdatedAt { get; set; }
-    public Guid UpdatedBy { get; set; }
-
+    [MaxLength(1023)]
     public string Content { get; set; } = null!;
-    public bool IsDeleted { get; set; }
 
-    //public Guid PostId { get; set; }
-    //public Post Post { get; set; } = null!;
+    // belong to 1 Post
+    public Guid PostId { get; set; }
+    public Post Post { get; set; } = null!;
 }

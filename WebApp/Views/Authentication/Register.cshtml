@@ -1,4 +1,5 @@
 ﻿@using FA.Application.Dtos.Accounts
+@using WebApp.Controllers
 @model RegisterDto
 
 @{
@@ -23,7 +24,9 @@
     <div class="row gx-4 gx-lg-5 justify-content-center">
         <div class="col-md-10 col-lg-8 col-xl-7">
 
-            <form asp-action="Register">
+            <form 
+                asp-controller="@nameof(AuthenticationController)[..^10]" 
+                asp-action="@nameof(AuthenticationController.Register)">
                 <div class="form-group mb-2">
                     <label asp-for="Username" class="control-label"></label>
                     <input asp-for="Username" class="form-control"/>
@@ -31,10 +34,6 @@
                 <div class="form-group mb-2">
                     <label asp-for="Password" class="control-label"></label>
                     <input asp-for="Password" class="form-control"/>
-                </div>
-                <div class="form-group mb-2">
-                    <label asp-for="Name" class="control-label"></label>
-                    <input asp-for="Name" class="form-control" />
                 </div>
                 <div class="form-group mb-2">
                     <label asp-for="Email" class="control-label"></label>
@@ -45,13 +44,11 @@
                     <input asp-for="About" class="form-control" />
                 </div>
                 <div class="form-group mb-2">
-                    <input type="submit" value="Register" class="btn btn-primary" />
+                    <button type="submit" class="btn btn-primary">Register</button>
+                    <a asp-controller="@nameof(AuthenticationController)[..^10]"
+                       asp-action="@nameof(AuthenticationController.Login)">Already have an account?</a>
                 </div>
             </form>
-
-            <div>
-                <a asp-action="Index">Back to List</a>
-            </div>
 
             @section Scripts {
                 @{

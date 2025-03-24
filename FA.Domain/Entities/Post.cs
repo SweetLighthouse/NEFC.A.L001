@@ -1,26 +1,35 @@
-﻿using FA.Domain.Interfaces;
-using FA.Domain.Interfaces.Entities;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FA.Domain.Entities;
 
-public class Post : IId, IMetadata, IPost, IIsDeleted
+[Table(nameof(Post))]
+public class Post : BaseEntity
 {
-    public Guid Id { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public Guid CreatedBy { get; set; }
-    public DateTime UpdatedAt { get; set; }
-    public Guid UpdatedBy { get; set; }
-
+    [MaxLength(255)]
     public string Title { get; set; } = null!;
-    public string Content { get; set; } = null!;
-    public double Rate { get; set; }
-    public int Count { get; set; }
-    public bool IsDeleted { get; set; }
 
-    //public Guid BlogId { get; set; } 
-    //public Blog Blog { get; set; } = null!;
-    //public Guid CategoryId { get; set; } 
-    //public Category Category { get; set; } = null!;
-    //public List<Comment> Comments { get; set; } = [];
-    //public List<Tag> Tags { get; set; } = []; 
+    [MaxLength(8192)]
+    public string Content { get; set; } = null!;
+
+    [Range(0, 10)]
+    public double Rate { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int ViewCount { get; set; }
+
+    // One Blog
+    public Guid BlogId { get; set; }
+    public Blog Blog { get; set; } = null!;
+
+    // One Category
+    public Guid CategoryId { get; set; } 
+    public Category Category { get; set; } = null!;
+
+    // Many to Many Tag
+    public List<Tag> Tags { get; set; } = [];
+    public List<PostTag> PostTags { get; set; } = [];
+
+    // Has many Comment
+    public List<Comment> Comments { get; set; } = [];
 }

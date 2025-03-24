@@ -1,0 +1,52 @@
+﻿@using WebApp.Controllers
+@model FA.Application.Dtos.Accounts.AccountDeleteDto
+
+@{
+    ViewData["Title"] = "DeleteAccount";
+}
+
+<!-- Page Header-->
+<header class="masthead" style="background-image: url('assets/img/home-bg.jpg')">
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="site-heading">
+                    <h1>Bloggggs</h1>
+                    <span class="subheading">Here you can find all the blogs.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main Content-->
+<div class="container px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-7">
+
+            <!-- Real Content-->
+            Are you sure you want to delete you account?
+            
+
+            <form asp-controller="@nameof(AuthenticationController)[..^10]"
+                  asp-action="@nameof(AuthenticationController.DeleteAccount)">
+                <div class="form-group mb-2">
+                    <label asp-for="Password" class="control-label">Type in your password: </label>
+                    <input asp-for="Password" class="form-control" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-2">
+                    <button type="submit" class="btn btn-danger">Delete Account</button>
+                    <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
+                </div>
+            </form>
+            @section Scripts {
+                @{
+                    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+                }
+            }
+            <!-- End of Real Content-->
+
+        </div>
+    </div>
+</div>

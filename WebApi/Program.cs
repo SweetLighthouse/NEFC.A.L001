@@ -14,18 +14,28 @@ var builder = WebApplication.CreateBuilder(args);
 //    options.SuppressMapClientErrors = true;
 //});
 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      policy =>
+                      {
+                          policy.WithOrigins("http://127.0.0.1:5500");
+                      });
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<MainDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("NEFC.A.L001")));
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<AuthorizerService>();
-builder.Services.AddScoped<BlogService>();
-builder.Services.AddScoped<CategoryService>();
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<PostService>();
-builder.Services.AddScoped<TagService>();
+//builder.Services.AddScoped<BlogService>();
+//builder.Services.AddScoped<CategoryService>();
+//builder.Services.AddScoped<UserService>();
+//builder.Services.AddScoped<PostService>();
+//builder.Services.AddScoped<TagService>();
 
 byte[] key = Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]!);
 
@@ -82,8 +92,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors(MyAllowSpecificOrigins);
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+
+app.UseRouting();
 
 app.MapControllers();
 app.Run();

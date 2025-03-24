@@ -1,18 +1,16 @@
-﻿using FA.Domain.Interfaces;
-using FA.Domain.Interfaces.Entities;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FA.Domain.Entities;
 
-public class Tag : IId, IMetadata, ITag, IIsDeleted
+[Table(nameof(Tag))]
+public class Tag : BaseEntity
 {
-    public Guid Id { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public Guid CreatedBy { get; set; }
-    public DateTime UpdatedAt { get; set; }
-    public Guid UpdatedBy { get; set; }
-
+    [MaxLength(255)]
     public string Name { get; set; } = null!;
-    public bool IsDeleted { get; set; }
-    //public List<Post> Posts { get; set; } = [];
+
+    // Many to Many Post
+    public List<Post> Posts { get; set; } = [];
+    public List<PostTag> PostTags { get; set; } = [];
 }
 

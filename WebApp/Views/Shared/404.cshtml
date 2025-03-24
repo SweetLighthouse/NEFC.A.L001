@@ -7,7 +7,10 @@
             <div class="col-md-10 col-lg-8 col-xl-7">
                 <div class="site-heading">
                     <h3>The resource you are looking for does not exist.</h3>
-                    @Html.ActionLink("Back to home page.", nameof(HomeController.Index), "Home", null, new { @class = "btn" })
+                    <a asp-controller="@nameof(HomeController)[..^10]"
+                       asp-action="@nameof(HomeController.Index)">
+                        Back to home page
+                    </a>
                 </div>
             </div>
         </div>
