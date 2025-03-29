@@ -86,7 +86,8 @@ public class MainDbContext : DbContext
         modelBuilder.Entity<User>()
             .HasMany(user => user.CommentsIUpdated)
             .WithOne(entity => entity.Updator)
-            .HasForeignKey(entity => entity.UpdatorId);
+            .HasForeignKey(entity => entity.UpdatorId)
+            .OnDelete(DeleteBehavior.SetNull);
 
 
 
