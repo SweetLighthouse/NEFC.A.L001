@@ -1,0 +1,98 @@
+﻿@using System.Security.Claims
+@using FA.Application.Dtos.BaseDtos
+@using FA.Application.Dtos.BlogDtos
+@using FA.Domain.Enumerations
+@using WebApp.Controllers
+@using WebApp.Services
+@model PageResultDto<BlogIndexDto>
+@inject AuthorizerService authorizerService
+@{
+    ViewData["Title"] = "Blogs";
+}
+
+<!-- Page Header-->
+<header class="masthead">
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="site-heading">
+                    <h1>Blogs</h1>
+                    <span class="subheading">Here you can find all the Blogs in the website.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main Content-->
+<div class="container px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-7">
+
+            <!-- Real Content-->
+            @if (authorizerService.HasPermission(ModuleAction.CreateBlog))
+            {
+                <a asp-controller="@nameof(BlogController)[..^10]"
+                   asp-action="@nameof(BlogController.Create)"
+                   class="btn btn-success text-uppercase">
+                    New
+                </a>
+            }
+
+            @foreach (var item in Model.Items)
+            {
+                <div class="post-preview">
+                    <a asp-controller="@nameof(BlogController)[..^10]"
+                       asp-action="@nameof(BlogController.Details)"
+                       asp-route-id="@item.Id">
+                        <h2 class="post-title">@item.Name</h2>
+                        @* <h3 class="post-subtitle">Problems look mighty small from 150 miles up</h3> *@
+                    </a>
+                    <span class="post-meta">
+                        Created by
+                        <partial name="_CreatorUserLink" model="item"></partial>
+                        on @item.CreatedAt
+                    </span>
+
+                    <p class="post-meta">
+                        Last updated by
+                        <partial name="_UpdatorUserLink" model="item"></partial>
+                        on @item.UpdatedAt
+                        @if (authorizerService.HasPermission(ModuleAction.UpdateBlog))
+                        {
+                            <a asp-controller="@nameof(BlogController)[..^10]"
+                               asp-action="@nameof(BlogController.Edit)"
+                               asp-route-id="@item.Id"
+                               class="link-warning">
+                                Edit
+                            </a>
+                        }
+
+                        @if (authorizerService.HasPermission(ModuleAction.DeleteBlog))
+                        {
+                            <a asp-controller="@nameof(BlogController)[..^10]"
+                               asp-action="@nameof(BlogController.Delete)"
+                               asp-route-id="@item.Id"
+                               class="link-danger">
+                                Delete
+                            </a>
+                        }
+                    </p>
+
+                </div>
+                <hr class="my-4">
+            }
+
+            @{
+                await Html.RenderPartialAsync("_PagedNavigation", new PageResultViewDto
+            {
+                Page = Model.Page,
+                PageSize = Model.PageSize,
+                TotalItem = Model.TotalItem,
+                ControllerName = nameof(BlogController)[..^10]
+            });
+            }
+            <!-- End of Real Content-->
+
+        </div>
+    </div>
+</div>

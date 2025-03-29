@@ -1,0 +1,55 @@
+﻿@using FA.Application.Dtos.CategoryDtos
+@using WebApp.Controllers
+@model CategoryUpdateDto
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<!-- Page Header-->
+<header class="masthead">
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="site-heading">
+                    <h1>Edit</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main Content-->
+<div class="container px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-7">
+
+            <!-- Real Content-->
+            <form asp-controller="@nameof(CategoryController)[..^10]"
+                  asp-action="@nameof(CategoryController.Edit)"
+                  asp-route-id="@TempData["id"]">
+
+                <partial name="_ReturnUrlHiddenInput" />
+                <input type="hidden" asp-for="UpdatedAt" />
+
+                <div class="form-floating">
+                    <input asp-for="Name" class="form-control" placeholder="..." autofocus>
+                    <label asp-for="Name"></label>
+                </div>
+
+                <div class="form-floating">
+                    <textarea asp-for="Description" class="form-control" placeholder="..." style="height: 12rem"></textarea>
+                    <label asp-for="Description"></label>
+                </div>
+
+                <br />
+
+                <div class="form-floating">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
+                </div>
+            </form>
+            <!-- End of Real Content-->
+
+        </div>
+    </div>
+</div>

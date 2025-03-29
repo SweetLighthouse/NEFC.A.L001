@@ -1,4 +1,4 @@
-﻿@using FA.Application.Dtos.Accounts
+﻿@using FA.Application.Dtos.AccountDtos
 @using WebApp.Controllers
 @model LoginDto
 
@@ -25,25 +25,29 @@
         <div class="col-md-10 col-lg-8 col-xl-7">
 
             <form asp-action="@nameof(AuthenticationController.Login)">
-                <div class="form-group mb-2">
-                    <label asp-for="Username" class="control-label"></label>
-                    <input asp-for="Username" class="form-control"/>
+
+                <partial name="_ReturnUrlHiddenInput" />
+
+                <div class="form-floating">
+                    <input asp-for="Username" class="form-control" placeholder="..." autofocus>
+                    <label asp-for="Username"></label>
                 </div>
-                <div class="form-group mb-2">
-                    <label asp-for="Password" class="control-label"></label>
-                    <input asp-for="Password" class="form-control"/>
+
+                <div class="form-floating">
+                    <input asp-for="Password" class="form-control" placeholder="..." type="password">
+                    <label asp-for="Password"></label>
                 </div>
-                <div class="form-group mb-2">
-                    <button type="submit" class="btn btn-primary">Login</button>
-                    <a asp-action="@nameof(AuthenticationController.Register)">Don't have an account?</a>
+                <br />
+                <div class="form-floating">
+                    <button type="submit" class="btn btn-primary">
+                        Login
+                    </button>
+                    <a asp-controller="@nameof(AuthenticationController)[..^10]"
+                       asp-action="@nameof(AuthenticationController.Register)">
+                        Don't have an account?
+                    </a>
                 </div>
             </form>
-
-            @section Scripts {
-                @{
-                    await Html.RenderPartialAsync("_ValidationScriptsPartial");
-                }
-            }
 
         </div>
     </div>

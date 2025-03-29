@@ -1,12 +1,14 @@
+using FA.Application.Dtos.Permissions;
 using FA.Application.Mappings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Net.Http;
 using System.Text;
 using WebApp.Commons;
 using WebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<AuthorizerService>();
+builder.Services.AddScoped<AuthorizerService>();
 
 builder.Services.AddHttpContextAccessor();
 
@@ -64,7 +66,16 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-await app.Services.GetRequiredService<AuthorizerService>().LoadPermissionsAsync(); 
+
+using (var scope = app.Services.CreateScope())
+{
+    //var authorizer = scope.ServiceProvider.GetRequiredService<AuthorizerService>();
+    IHttpClientFactory httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
+    HttpClient httpClient = httpClientFactory.CreateClient(Constants.BackendClientName);
+    PermissionTable.Permissions = await httpClient.GetFromJsonAsync<List<PermissionDto>>(Constants.Api.Permission)
+                     ?? throw new NullReferenceException("Permissions API returned null."); ;
+    //await authorizer.LoadPermissionsAsync();
+}
 
 app.UseRouting();
 

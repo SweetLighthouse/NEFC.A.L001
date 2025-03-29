@@ -1,0 +1,98 @@
+﻿@using System.Security.Claims
+@using FA.Application.Dtos.BaseDtos
+@using FA.Application.Dtos.CategoryDtos
+@using FA.Domain.Enumerations
+@using WebApp.Controllers
+@using WebApp.Services
+@model PageResultDto<CategoryIndexDto>
+@inject AuthorizerService authorizerService
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<!-- Page Header-->
+<header class="masthead">
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="site-heading">
+                    <h1>Categories</h1>
+                    <span class="subheading">Here you can find all the categories in the website.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main Content-->
+<div class="container px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-7">
+
+            <!-- Real Content-->
+            @if (authorizerService.HasPermission(ModuleAction.CreateCategory))
+            {
+                <a asp-controller="@nameof(CategoryController)[..^10]"
+                   asp-action="@nameof(CategoryController.Create)"
+                   class="btn btn-success text-uppercase">
+                    New
+                </a>
+            }
+
+            @foreach (var item in Model.Items)
+            {
+                <div class="post-preview">
+                    <a asp-controller="@nameof(CategoryController)[..^10]"
+                       asp-action="@nameof(CategoryController.Details)"
+                       asp-route-id="@item.Id">
+                        <h2 class="post-title">@item.Name</h2>
+                        @* <h3 class="post-subtitle">Problems look mighty small from 150 miles up</h3> *@
+                    </a>
+                    <span class="post-meta">
+                        Created by
+                        <partial name="_CreatorUserLink" model="item"></partial>
+                        on @item.CreatedAt
+                    </span>
+
+                    <p class="post-meta">
+                        Last updated by
+                        <partial name="_UpdatorUserLink" model="item"></partial>
+                        on @item.UpdatedAt
+                        @if (authorizerService.HasPermission(ModuleAction.UpdateCategory))
+                        {
+                            <a asp-controller="@nameof(CategoryController)[..^10]"
+                               asp-action="@nameof(CategoryController.Edit)"
+                               asp-route-id="@item.Id"
+                               class="link-warning">
+                                Edit
+                            </a>
+                        }
+
+                        @if (authorizerService.HasPermission(ModuleAction.DeleteCategory))
+                        {
+                            <a asp-controller="@nameof(CategoryController)[..^10]"
+                               asp-action="@nameof(CategoryController.Delete)"
+                               asp-route-id="@item.Id"
+                               class="link-danger">
+                                Delete
+                            </a>
+                        }
+                    </p>
+
+                </div>
+                <hr class="my-4">
+            }
+
+            @{
+                await Html.RenderPartialAsync("_PagedNavigation", new PageResultViewDto
+            {
+                Page = Model.Page,
+                PageSize = Model.PageSize,
+                TotalItem = Model.TotalItem,
+                ControllerName = nameof(CategoryController)[..^10]
+            });
+            }
+            <!-- End of Real Content-->
+
+        </div>
+    </div>
+</div>

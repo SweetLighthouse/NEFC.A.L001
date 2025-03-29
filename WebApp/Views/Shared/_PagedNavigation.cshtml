@@ -1,0 +1,62 @@
+﻿@using FA.Application.Dtos.BaseDtos
+@using FA.Domain.Entities
+@model PageResultViewDto
+
+<div class="d-flex justify-content-center gap-2 mb-4">
+
+    <!-- First Page -->
+    @if (Model.Page > 3)
+    {
+        <a class="btn btn-primary btn-sm text-uppercase"
+           asp-controller="@Model.ControllerName"
+           asp-action="Index"
+           asp-route-page="1">
+            1
+        </a>
+    }
+
+    <!-- Previous Pages -->
+    @for (int i = Model.Page - 2; i < Model.Page; i++)
+    {
+        if (i > 0)
+        {
+            <a class="btn btn-primary btn-sm text-uppercase"
+               asp-controller="@Model.ControllerName"
+               asp-action="Index"
+               asp-route-page="@i">
+                @i
+            </a>
+        }
+    }
+
+    <!-- Current Page (Disabled) -->
+    <form asp-controller="@Model.ControllerName"
+          asp-action="Index"
+          method="get">
+        <input placeholder="@Model.Page" name="page" type="number" min="1" max="@Model.TotalPage" value="@Model.Page"
+               class="form-control form-control-sm w" style="max-width: 70px;" />
+    </form>
+
+    <!-- Next Pages -->
+    @for (int i = Model.Page + 1; i <= Model.Page + 2 && i <= Model.TotalPage; i++)
+    {
+        <a class="btn btn-primary btn-sm text-uppercase"
+           asp-controller="@Model.ControllerName"
+           asp-action="Index"
+           asp-route-page="@i">
+            @i
+        </a>
+    }
+
+    <!-- Last Page -->
+    @if (Model.Page < Model.TotalPage - 2)
+    {
+        <a class="btn btn-primary btn-sm text-uppercase"
+           asp-controller="@Model.ControllerName"
+           asp-action="Index"
+           asp-route-page="@Model.TotalPage">
+            @Model.TotalPage
+        </a>
+    }
+
+</div>

@@ -7,7 +7,7 @@
 }
 
 <!-- Page Header-->
-<header class="masthead" style="background-image: url('assets/img/home-bg.jpg')">
+<header class="masthead">
     <div class="container position-relative px-4 px-lg-5">
         <div class="row gx-4 gx-lg-5 justify-content-center">
             <div class="col-md-10 col-lg-8 col-xl-7">
@@ -28,30 +28,40 @@
             <form asp-controller="@nameof(UserController)[..^10]"
                   asp-action="@nameof(UserController.Edit)"
                   asp-route-id="@TempData["id"]">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <div class="form-group mb-2">
-                    <label asp-for="Username" class="control-label"></label>
-                    <input asp-for="Username" class="form-control" />
-                    <span asp-validation-for="Username" class="text-danger"></span>
+
+                <partial name="_ReturnUrlHiddenInput" />
+                <input type="hidden" asp-for="UpdatedAt" />
+
+                <div class="form-floating">
+                    <input asp-for="Username" class="form-control" placeholder="..." autofocus>
+                    <label asp-for="Username"></label>
                 </div>
-                <div class="form-group mb-2">
-                    <label asp-for="Role" class="control-label"></label>
-                    <select asp-for="Role" asp-items="Html.GetEnumSelectList<Role>()" class="form-control">
-                        <option value="">-- Select Role --</option>
+
+                <div class="form-floating">
+                    <input asp-for="Password" class="form-control" placeholder="..." type="password">
+                    <label asp-for="Password"></label>
+                </div>
+
+                <div class="form-floating">
+                    <select asp-for="Role" asp-items="Html.GetEnumSelectList<Role>()" class="form-select border-top-0 border-end-0 border-start-0 ps-0">
+                        <option value="" selected>-- Select Role --</option>
                     </select>
-                    <span asp-validation-for="Role" class="text-danger"></span>
+                    <label asp-for="Role"></label>
                 </div>
-                <div class="form-group mb-2">
-                    <label asp-for="Email" class="control-label"></label>
-                    <input asp-for="Email" class="form-control" />
-                    <span asp-validation-for="Email" class="text-danger"></span>
+
+                <div class="form-floating">
+                    <input asp-for="Email" class="form-control" placeholder="..." autofocus>
+                    <label asp-for="Email"></label>
                 </div>
-                <div class="form-group mb-2">
-                    <label asp-for="About" class="control-label"></label>
-                    <input asp-for="About" class="form-control" />
-                    <span asp-validation-for="About" class="text-danger"></span>
+
+                <div class="form-floating">
+                    <textarea asp-for="About" class="form-control" placeholder="..." style="height: 12rem"></textarea>
+                    <label asp-for="About"></label>
                 </div>
-                <div class="form-group mb-2">
+
+                <br />
+
+                <div class="form-floating">
                     <button type="submit" class="btn btn-primary">Save</button>
                     <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
                 </div>

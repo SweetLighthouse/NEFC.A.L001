@@ -1,0 +1,23 @@
+﻿@using FA.Application.Dtos
+@using FA.Application.Dtos.BaseDtos
+@using WebApp.Controllers
+@model BaseEntityDto
+@{
+    Guid userId = Guid.TryParse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var parsedUserId)
+        ? parsedUserId
+        : Guid.Empty;
+}
+
+<a asp-controller="@nameof(UserController)[..^10]"
+   asp-action="@nameof(UserController.Details)"
+   asp-route-id="@Model.Updator.Id">
+    @Model.Updator.Username
+    @if (Model.Updator.Id == Model.Id)
+    {
+        <span>(self)</span>
+    }
+    @if (Model.Updator.Id == userId)
+    {
+        <span>(you)</span>
+    }
+</a>

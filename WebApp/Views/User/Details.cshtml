@@ -7,107 +7,158 @@
 @{
     ViewData["Title"] = "Details";
 }
+@{
+    Guid userId = Guid.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var parsedUserId)
+        ? parsedUserId
+        : Guid.Empty;
+}
 
 <!-- Page Header-->
-<header class="masthead" style="background-image: url('assets/img/home-bg.jpg')">
+<header class="masthead">
     <div class="container position-relative px-4 px-lg-5">
         <div class="row gx-4 gx-lg-5 justify-content-center">
             <div class="col-md-10 col-lg-8 col-xl-7">
-                <div class="site-heading">
-                    <h1>User details</h1>
-                    @* <span class="subheading">A Blog Theme by Start Bootstrap</span> *@
+                <div class="post-heading">
+
+                    <h1>@Model.Username</h1>
+
+                    <h2 class="subheading">@Model.Role</h2>
+
+                    <span class="meta mt-1">@Model.Email</span>
+
+                    <span class="meta mt-1">
+                        Created by
+                        <partial name="_CreatorUserLink" model="Model"></partial>
+                        on @Model.CreatedAt
+                    </span>
+
+                    <span class="meta mt-1">
+                        Last updated by
+                        <partial name="_UpdatorUserLink" model="Model"></partial>
+                        on @Model.UpdatedAt
+                    </span>
+                    
+                    <span class="meta mt-1">@Model.About</span>
+
+                    <div class="mt-2">
+
+                        @if (authorizerService.HasPermission(ModuleAction.UpdateUser))
+                        {
+                            <a asp-controller="@nameof(UserController)[..^10]"
+                               asp-action="@nameof(UserController.Edit)"
+                               asp-route-id="@Model.Id"
+                               class="btn btn-warning">
+                                Edit
+                            </a>
+                        }
+
+                        @if (authorizerService.HasPermission(ModuleAction.DeleteUser))
+                        {
+                            <a asp-controller="@nameof(UserController)[..^10]"
+                               asp-action="@nameof(UserController.Delete)"
+                               asp-route-id="@Model.Id"
+                               class="btn btn-danger">
+                                Delete
+                            </a>
+                        }
+                        <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
+                    </div>
+
                 </div>
             </div>
         </div>
     </div>
 </header>
+
 <!-- Main Content-->
 <div class="container px-4 px-lg-5">
     <div class="row gx-4 gx-lg-5 justify-content-center">
         <div class="col-md-10 col-lg-8 col-xl-7">
 
             <!-- Real Content -->
-            <dl class="row">
-                <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.CreatedAt)
-                </dt>
-                <dd class="col-sm-10">
-                    @Html.DisplayFor(model => model.CreatedAt)
-                </dd>
+            @foreach(var post in Model.PostsICreated)
+            {
+                <div class="post-preview">
 
-                <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Creator)
-                </dt>
-                <dd class="col-sm-10">
-                    <a asp-controller="@nameof(UserController)[..^10]"
-                    asp-action="@nameof(UserController.Details)"
-                    asp-route-id="@Model.Creator.Id">
-                        @Html.DisplayFor(model => model.Creator.Username)
-                    </a>
-                </dd>
-
-                <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.UpdatedAt)
-                </dt>
-                <dd class="col-sm-10">
-                    @Html.DisplayFor(model => model.UpdatedAt)
-                </dd>
-                <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Username)
-                </dt>
-                <dd class="col-sm-10">
-                    @Html.DisplayFor(model => model.Username)
-                </dd>
-                <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Role)
-                </dt>
-                <dd class="col-sm-10">
-                    @Html.DisplayFor(model => model.Role)
-                </dd>
-                <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Email)
-                </dt>
-                <dd class="col-sm-10">
-                    @Html.DisplayFor(model => model.Email)
-                </dd>
-                <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.About)
-                </dt>
-                <dd class="col-sm-10">
-                    @Html.DisplayFor(model => model.About)
-                </dd>
-            </dl>
-
-            <div class="mb-2">
-                @if (authorizerService.HasPermission(User.FindFirst(ClaimTypes.Role)?.Value, ModuleAction.UpdateUser))
-                {
-                    <a asp-controller="@nameof(UserController)[..^10]"
-                    asp-action="@nameof(UserController.Edit)"
-                    asp-route-id="@Model.Id"
-                    class="btn btn-warning">
-                        Edit
+                    <a asp-controller="@nameof(BlogController)[..^10]"
+                       asp-action="@nameof(BlogController.Details)"
+                       asp-route-id="@post.Blog.Id">
+                        @* <h2 class="post-title"></h2> *@
+                        <h3 class="mb-1 mt-3 post-subtitle">@post.Blog.Name</h3>
                     </a>
 
-                    <a asp-controller="@nameof(UserController)[..^10]"
-                    asp-action="@nameof(UserController.ChangePassword)"
-                    asp-route-id="@Model.Id"
-                    class="btn btn-warning">
-                        Change password
+                    <a asp-controller="@nameof(PostController)[..^10]"
+                       asp-action="@nameof(PostController.Details)"
+                       asp-route-id="@post.Id">
+                        <h2 class="mt-0 post-title">@post.Title</h2>
+                        @* <h3 class="post-subtitle"></h3> *@
                     </a>
-                }
 
-                @if (authorizerService.HasPermission(User.FindFirst(ClaimTypes.Role)?.Value, ModuleAction.DeleteUser))
-                {
-                    <a asp-controller="@nameof(UserController)[..^10]"
-                       asp-action="@nameof(UserController.Delete)"
-                       asp-route-id="@Model.Id"
-                       class="btn btn-danger">
-                        Delete
-                    </a>
-                }
-                
-                <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
-            </div>
+                    <div>
+                        <span class="post-meta">Categories:</span>
+                        <span class="post-meta">
+                            @foreach (var category in post.Categories)
+                            {
+                                <a asp-controller="@nameof(CategoryController)[..^10]"
+                                   asp-action="@nameof(CategoryController.Details)"
+                                   asp-route-id="@category.Id">
+                                    <span class="badge bg-secondary">@category.Name</span>
+                                </a>
+                            }
+                        </span>
+                    </div>
+
+                    <div>
+                        <span class="post-meta">Tags:</span>
+                        <span class="post-meta">
+                            @foreach (var tag in post.Tags)
+                            {
+                                <a asp-controller="@nameof(TagController)[..^10]"
+                                   asp-action="@nameof(TagController.Details)"
+                                   asp-route-id="@tag.Id">
+                                    <span class="badge bg-secondary">@tag.Name</span>
+                                </a>
+                            }
+                        </span>
+                    </div>
+
+                    <span class="post-meta">
+                        Created by
+                        <partial name="_CreatorUserLink" model="post"></partial>
+                        on @post.CreatedAt
+                    </span>
+
+
+
+                    <p class="post-meta">
+                        Last updated by
+                        <partial name="_UpdatorUserLink" model="post"></partial>
+                        on @post.UpdatedAt
+                        @if (authorizerService.HasPermission(ModuleAction.UpdatePost))
+                        {
+                            <a asp-controller="@nameof(PostController)[..^10]"
+                               asp-action="@nameof(PostController.Edit)"
+                               asp-route-id="@post.Id"
+                               class="link-warning">
+                                Edit
+                            </a>
+                        }
+
+                        @if (authorizerService.HasPermission(ModuleAction.DeletePost))
+                        {
+                            <a asp-controller="@nameof(PostController)[..^10]"
+                               asp-action="@nameof(PostController.Delete)"
+                               asp-route-id="@post.Id"
+                               class="link-danger">
+                                Delete
+                            </a>
+                        }
+                    </p>
+
+                </div>
+                <hr class="my-4">
+            }
+
             <!-- End of Real Content -->
 
         </div>

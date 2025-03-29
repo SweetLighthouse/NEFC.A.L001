@@ -32,7 +32,7 @@ public static class Constants
         public const string Permission = "/api/Permissions";
 
         public const string Blog = "/api/Blogs";
-        public const string Category = "/api/Categorys";
+        public const string Category = "/api/Categories";
         public const string Comment = "/api/Comments";
         public const string Post = "/api/Posts";
         public const string Tag = "/api/Tags";

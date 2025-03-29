@@ -10,20 +10,11 @@ namespace FA.Domain.Entities;
 
 public class User : BaseEntity
 {
-    [Length(3, 50)]
-    public string Username { get; set; } = null!;
-
-    [MaxLength(255)]
-    public string Password { get; set; } = null!;
-    
+    [MaxLength(50)] public string Username { get; set; } = null!;
+    [MaxLength(255)] public string Password { get; set; } = null!;
     public Role Role { get; set; }
-
-    [EmailAddress]
-    [MaxLength(255)]
-    public string? Email { get; set; }
-
-    [MaxLength(1023)]
-    public string? About { get; set; }
+    [EmailAddress][MaxLength(255)] public string? Email { get; set; }
+    [MaxLength(1023)] public string? About { get; set; }
 
     public List<User> UsersICreated { get; set; } = [];
     public List<User> UsersIUpdated { get; set; } = [];
@@ -42,4 +33,7 @@ public class User : BaseEntity
 
     public List<Comment> CommentsICreated { get; set; } = [];
     public List<Comment> CommentsIUpdated { get; set; } = [];
+
+    public List<UploadFile> UploadFilesICreated { get; set; } = [];
+    public List<UploadFile> UploadFilesIUpdated { get; set; } = [];
 }

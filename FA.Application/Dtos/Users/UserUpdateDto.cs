@@ -1,13 +1,17 @@
-﻿using FA.Domain.Enumerations;
+﻿using FA.Application.Dtos.BaseDtos;
+using FA.Domain.Enumerations;
 using System.ComponentModel.DataAnnotations;
 
 namespace FA.Application.Dtos.Users;
 
-public class UserUpdateDto
+public class UserUpdateDto : LastUpdated
 {
     [Length(3, 50, ErrorMessage = "Username must be between 3 and 50 characters long.")]
-    public string Username { get; set; } = null!;
+    public string? Username { get; set; } = null!;
 
+
+    [Length(3, 50, ErrorMessage = "Password must be between 3 and 50 characters long.")]
+    public string Password { get; set; } = null!;
 
 
     [Required(ErrorMessage = "Role is required.")]

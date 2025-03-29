@@ -1,56 +1,72 @@
 ﻿using AutoMapper;
 using FA.Application.Dtos.BaseDtos;
-using FA.Application.Dtos.Blogs;
+using FA.Application.Dtos.BlogDtos;
 using FA.Application.Services;
 using FA.Domain.Entities;
 using FA.Domain.Enumerations;
 using FA.Infrastructure.Context;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class BlogsController : IndependentEntityController<Blog, BlogRequestDto, BlogIndexDto, BlogDetailDto>
+public class BlogsController(MainDbContext context, IMapper mapper)
+    : BaseEntitiesController<Blog, BlogCreateDto, BlogUpdateDto, BlogIndexDto, BlogDetailDto>(context, mapper)
 {
-    private readonly string? UserRole;
-    private readonly AuthorizerService _authorizerService;
-    public BlogsController(MainDbContext context, IMapper mapper, AuthorizerService authorizerService) : base(context, mapper)
-    {
-        _authorizerService = authorizerService;
-        UserRole = User.FindFirst(ClaimTypes.Role)?.Value;
-    }
 
-    public override async Task<ActionResult<PageResultDto<BlogIndexDto>>> GetsAsync(int page = 1, int pageSize = 10)
-    {
-        if (!_authorizerService.HasPermission(UserRole, ModuleAction.IndexBlog)) return Forbid();
-        return await base.GetsAsync(page, pageSize);
-    }
+    [Permission(ModuleAction.IndexBlog)]
+    public override async Task<ActionResult<PageResultDto<BlogIndexDto>>> GetsAsync(int page = 1, int pageSize = 10) => await base.GetsAsync(page, pageSize);
 
-    public override async Task<ActionResult<BlogDetailDto>> GetByIdAsync(Guid id)
-    {
-        if (!_authorizerService.HasPermission(UserRole, ModuleAction.DetailsBlog)) return Forbid();
-        return await base.GetByIdAsync(id);
-    }
 
-    public override async Task<ActionResult> PostAsync([FromBody] BlogRequestDto requestDto)
+    [Permission(ModuleAction.DetailsBlog)]
+    public override async Task<ActionResult<BlogDetailDto>> GetByIdAsync(Guid id) => await base.GetByIdAsync(id);
+
+
+    [Permission(ModuleAction.CreateBlog)]
+    public override async Task<IActionResult> PostAsync([FromBody] BlogCreateDto requestDto)
     {
-        if (!_authorizerService.HasPermission(UserRole, ModuleAction.CreateBlog)) return Forbid();
+        if (requestDto == null ||
+            string.IsNullOrWhiteSpace(requestDto.Name)) return BadRequest();
         return await base.PostAsync(requestDto);
     }
 
-    public override async Task<IActionResult> PutAsync(Guid id, [FromBody] BlogRequestDto requestDto)
+    [HttpPut("{id}")]
+    [Permission(ModuleAction.UpdateBlog)]
+    public override async Task<IActionResult> PutAsync(Guid id, [FromBody] BlogUpdateDto requestDto)
     {
-        if (!_authorizerService.HasPermission(UserRole, ModuleAction.UpdateBlog)) return Forbid();
-        return await base.PutAsync(id, requestDto);
+        if (requestDto == null) return BadRequest();
+        Blog? entity = await _dbSet.FindAsync(id);
+        if (entity == null) return NotFound();
+        if (Math.Abs((entity.UpdatedAt - requestDto.UpdatedAt).TotalSeconds) >= 1) return Conflict();
+
+        if (requestDto.Name != null)
+        {
+            if (string.IsNullOrWhiteSpace(requestDto.Name)) return BadRequest();
+            entity.Name = requestDto.Name;
+        }
+        if(requestDto.Description != null) entity.Description = requestDto.Description;
+
+        _dbSet.Update(entity);
+        await _context.SaveChangesAsync();
+        return NoContent();
     }
 
+    [HttpDelete("{id}")]
+    [Permission(ModuleAction.DeleteBlog)]
     public override async Task<IActionResult> DeleteAsync(Guid id)
     {
-        if (!_authorizerService.HasPermission(UserRole, ModuleAction.DeleteBlog)) return Forbid();
-        return await base.DeleteAsync(id);
+        // customized so every post is deleted together
+        Blog? blog = await _dbSet
+            .Include(b => b.Posts)
+            .FirstOrDefaultAsync(b => b.Id == id);
+
+        if (blog == null) return NotFound();
+
+        blog.IsDeleted = true;
+        foreach (var post in blog.Posts) post.IsDeleted = true;
+        await _context.SaveChangesAsync();
+        return NoContent();
     }
-
-
 }

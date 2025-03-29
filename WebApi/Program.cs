@@ -1,18 +1,11 @@
-using FA.Application.Services;
 using FA.Infrastructure.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
-//builder.Services.Configure<ApiBehaviorOptions>(options =>
-//{
-//    options.SuppressMapClientErrors = true;
-//});
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>
@@ -30,7 +23,6 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<MainDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("NEFC.A.L001")));
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddSingleton<AuthorizerService>();
 //builder.Services.AddScoped<BlogService>();
 //builder.Services.AddScoped<CategoryService>();
 //builder.Services.AddScoped<UserService>();
@@ -92,7 +84,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors(MyAllowSpecificOrigins);
+//app.UseCors(MyAllowSpecificOrigins);
 
 app.UseAuthentication();
 app.UseAuthorization();

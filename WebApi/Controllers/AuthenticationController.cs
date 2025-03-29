@@ -4,12 +4,12 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using FA.Application.Dtos.Accounts;
 using FA.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using FA.Domain.Enumerations;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using FA.Application.Dtos.AccountDtos;
 
 namespace WebApi.Controllers;
 
@@ -38,9 +38,9 @@ public class AuthenticationController : ControllerBase
         Guid guid = Guid.NewGuid();
         User user = _mapper.Map<User>(registerDto);
         user.Password = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
-        user.Id = guid;
-        user.CreatorId = guid;
-        user.UpdatorId = guid;
+        //user.Id = guid;
+        //user.CreatorId = guid;
+        //user.UpdatorId = guid;
         await _mainDbContext.Users.AddAsync(user);
         await _mainDbContext.SaveChangesAsync();
         return StatusCode(201); // return Created(); // will return 204 if calls with 0 args.
@@ -109,6 +109,8 @@ public class AuthenticationController : ControllerBase
             .Where(u => u.Id == new Guid(UserId) && !u.IsDeleted)
             .SingleAsync();
 
+        if (accountUpdateDto.UpdatedAt != user.UpdatedAt) return Conflict();
+
         if (!BCrypt.Net.BCrypt.Verify(accountUpdateDto.CurrentPassword, user.Password)) return Unauthorized();
         if (_mainDbContext.Users.Any(u => u.Username == accountUpdateDto.Username && u.Id != new Guid(UserId))) return Conflict();
 
@@ -116,7 +118,7 @@ public class AuthenticationController : ControllerBase
         if (accountUpdateDto.NewPassword != null) user.Password = BCrypt.Net.BCrypt.HashPassword(accountUpdateDto.NewPassword);
         user.Email = accountUpdateDto.Email;
         user.About = accountUpdateDto.About;
-        user.UpdatorId = user.Id;
+        //user.UpdatorId = user.Id;
         _mainDbContext.Update(user);
         await _mainDbContext.SaveChangesAsync();
         return NoContent();
@@ -133,7 +135,7 @@ public class AuthenticationController : ControllerBase
 
         if (!BCrypt.Net.BCrypt.Verify(accountDeleteDto.Password, user.Password)) return Unauthorized();
 
-        user.UpdatorId = user.Id;
+        //user.UpdatorId = user.Id;
         user.IsDeleted = true;
 
         _mainDbContext.Update(user);

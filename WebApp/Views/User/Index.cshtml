@@ -6,7 +6,6 @@
 @using WebApp.Services
 @model PageResultDto<UserIndexDto>
 @inject AuthorizerService authorizerService
-
 @{
     ViewData["Title"] = "Index";
 }
@@ -30,130 +29,70 @@
         <div class="col-md-10 col-lg-8 col-xl-7">
 
             <!-- Real Content-->
-            @if (authorizerService.HasPermission(User.FindFirst(ClaimTypes.Role)?.Value, ModuleAction.CreateUser))
+            @if (authorizerService.HasPermission(ModuleAction.CreateUser))
             {
-                <p>
-                    <a asp-controller="@nameof(UserController)[..^10]"
-                       asp-action="@nameof(UserController.Create)">
-                        Create New
-                    </a>
-                </p>
+                <a asp-controller="@nameof(UserController)[..^10]"
+                   asp-action="@nameof(UserController.Create)"
+                   class="btn btn-success text-uppercase">
+                    New
+                </a>
             }
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>
-                            @nameof(UserIndexDto.Username)
-                        </th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.Items)
-                    {
-                        <tr>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.Username)
-                            </td>
-                            <td>
-                                @if (authorizerService.HasPermission(User.FindFirst(ClaimTypes.Role)?.Value, ModuleAction.DetailsUser))
-                                {
-                                    <a asp-controller="@nameof(UserController)[..^10]"
-                                       asp-action="@nameof(UserController.Details)"
-                                       asp-route-id="@item.Id">
-                                        &#x2139;
-                                    </a>
-                                }
 
-                                @if (authorizerService.HasPermission(User.FindFirst(ClaimTypes.Role)?.Value, ModuleAction.UpdateUser))
-                                {
-                                    <a asp-controller="@nameof(UserController)[..^10]"
-                                       asp-action="@nameof(UserController.Edit)"
-                                       asp-route-id="@item.Id">
-                                        &#x270E;
-                                    </a>
-
-                                    <a asp-controller="@nameof(UserController)[..^10]"
-                                       asp-action="@nameof(UserController.ChangePassword)"
-                                       asp-route-id="@item.Id">
-                                        &#x1F511;
-                                    </a>
-                                }
-
-                                @if (authorizerService.HasPermission(User.FindFirst(ClaimTypes.Role)?.Value, ModuleAction.DeleteUser))
-                                {
-                                    <a asp-controller="@nameof(UserController)[..^10]"
-                                       asp-action="@nameof(UserController.Delete)"
-                                       asp-route-id="@item.Id">
-                                        &#x274C;
-                                    </a>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-            <div class="d-flex justify-content-center gap-2 mb-4">
-
-                <!-- First Page -->
-                @if (Model.Page > 3)
-                {
-                    <a class="btn btn-primary btn-sm text-uppercase"
-                       asp-controller="@nameof(UserController)[..^10]"
-                       asp-action="@nameof(UserController.Index)"
-                       asp-route-page="1">
-                        1
+            @foreach (var item in Model.Items)
+            {
+                <div class="post-preview">
+                    <a asp-controller="@nameof(UserController)[..^10]"
+                       asp-action="@nameof(UserController.Details)"
+                       asp-route-id="@item.Id">
+                        <h2 class="post-title">@item.Username</h2>
+                        <h3 class="post-subtitle">@item.Role</h3>
                     </a>
-                }
+                    <p class="post-meta m-0">@item.Email</p>
+                    <p class="post-meta m-0">
+                        Created by
+                        <partial name="_CreatorUserLink" model="item"></partial>
+                        on @item.CreatedAt
+                    </p>
 
-                <!-- Previous Pages -->
-                @for (int i = Model.Page - 2; i < Model.Page; i++)
+                    <p class="post-meta m-0">
+                        Last updated by
+                        <partial name="_UpdatorUserLink" model="item"></partial>
+                        on @item.CreatedAt
+                        @if (authorizerService.HasPermission(ModuleAction.UpdateBlog))
+                        {
+                            <a asp-controller="@nameof(UserController)[..^10]"
+                               asp-action="@nameof(UserController.Edit)"
+                               asp-route-id="@item.Id"
+                               class="link-warning">
+                                Edit
+                            </a>
+                        }
+
+                        @if (authorizerService.HasPermission(ModuleAction.DeleteBlog))
+                        {
+                            <a asp-controller="@nameof(UserController)[..^10]"
+                               asp-action="@nameof(UserController.Delete)"
+                               asp-route-id="@item.Id"
+                               class="link-danger">
+                                Delete
+                            </a>
+                        }
+                    </p>
+                    <p class="post-meta m-0">@item.About</p>
+
+                </div>
+                <hr class="my-4">
+            }
+
+            @{
+                await Html.RenderPartialAsync("_PagedNavigation", new PageResultViewDto
                 {
-                    if (i > 0)
-                    {
-                        <a class="btn btn-primary btn-sm text-uppercase"
-                           asp-controller="@nameof(UserController)[..^10]"
-                           asp-action="@nameof(UserController.Index)"
-                           asp-route-page="@i">
-                            @i
-                        </a>
-                    }
-                }
-
-                <!-- Current Page (Disabled) -->
-                <form asp-controller="@nameof(UserController)[..^10]"
-                    asp-action="@nameof(UserController.Index)"
-                    method="get">
-                    <input placeholder="@Model.Page" name="page" type="number" min="1" max="@Model.TotalPage" value="@Model.Page" class="form-control form-control-sm w" style="max-width: 70px;" />
-                </form>
-                @* <a class="btn btn-secondary btn-sm text-uppercase disabled"> *@
-                @*     @Model.Page *@
-                @* </a> *@
-
-                <!-- Next Pages -->
-                @for (int i = Model.Page + 1; i <= Model.Page + 2 && i <= Model.TotalPage; i++)
-                {
-                    <a class="btn btn-primary btn-sm text-uppercase"
-                       asp-controller="@nameof(UserController)[..^10]"
-                       asp-action="@nameof(UserController.Index)"
-                       asp-route-page="@i">
-                        @i
-                    </a>
-                }
-
-                <!-- Last Page -->
-                @if (Model.Page < Model.TotalPage - 2)
-                {
-                    <a class="btn btn-primary btn-sm text-uppercase"
-                       asp-controller="@nameof(UserController)[..^10]"
-                       asp-action="@nameof(UserController.Index)"
-                       asp-route-page="@Model.TotalPage">
-                        @Model.TotalPage
-                    </a>
-                }
-
-            </div>
-
+                    Page = Model.Page,
+                    PageSize = Model.PageSize,
+                    TotalItem = Model.TotalItem,
+                    ControllerName = nameof(UserController)[..^10]
+                });
+            }
 
             <!-- End of Real Content-->
 

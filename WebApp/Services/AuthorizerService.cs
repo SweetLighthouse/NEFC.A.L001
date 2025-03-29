@@ -1,43 +1,33 @@
 ﻿using FA.Application.Dtos.Permissions;
 using FA.Domain.Enumerations;
-using WebApp.Commons;
+using System.Security.Claims;
 
 namespace WebApp.Services;
 
 public class AuthorizerService
 {
-    private readonly HttpClient _httpClient;
-    private List<PermissionDto> _permissions = [];
-
-    public AuthorizerService(IHttpClientFactory httpClientFactory)
+    private readonly Role? _role;
+    
+    public  AuthorizerService(IHttpContextAccessor httpContextAccessor)
     {
-        _httpClient = httpClientFactory.CreateClient(Constants.BackendClientName);
+        if (Enum.TryParse(httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Role)?.Value, out Role role))
+        {
+            _role = role;
+        }
     }
 
-    public async Task LoadPermissionsAsync()
+    public bool HasPermission(ModuleAction moduleAction)
     {
-        _permissions = await _httpClient.GetFromJsonAsync<List<PermissionDto>>(Constants.Api.Permission)
-                     ?? throw new NullReferenceException("Permissions API returned null.");
-    }
-
-    public bool HasPermission(Role role, ModuleAction moduleAction)
-    {
-        var permission = _permissions.FirstOrDefault(p => p.ModuleAction == moduleAction.ToString());
+        PermissionDto? permission = PermissionTable.Permissions.FirstOrDefault(p => p.ModuleAction == moduleAction.ToString());
         if (permission == null) return false;
-
-        return role switch
+        return _role switch
         {
             Role.User => permission.CanUser,
             Role.Contributor => permission.CanContributor,
             Role.BlogOwner => permission.CanBlogOwner,
-            _ => false
+            //_ => false
+            _ => permission.CanUser
         };
-    }
-
-    public bool HasPermission(string? roleRaw, ModuleAction moduleAction)
-    {
-        Enum.TryParse<Role>(roleRaw, out var role);
-        return HasPermission(role, moduleAction);
     }
 }
 

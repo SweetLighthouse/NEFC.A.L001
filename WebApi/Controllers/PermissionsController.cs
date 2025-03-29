@@ -7,22 +7,13 @@ namespace WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class PermissionsController : ControllerBase
+public class PermissionsController() : ControllerBase
 {
-    private readonly AuthorizerService _authorizerService;
-
-    public PermissionsController(AuthorizerService authorizerService)
-    {
-        _authorizerService = authorizerService;
-    }
-
-
     [HttpGet]
     public ActionResult<List<PermissionDto>> GetPermissions()
     {
-        List<PermissionDto> permissionsList = new List<PermissionDto>();
-
-        foreach (var entry in _authorizerService.GetPermissionsTable())
+        List<PermissionDto> permissionsList = [];
+        foreach (var entry in Permission.permissionsTable)
         {
             permissionsList.Add(new PermissionDto
             {
@@ -32,7 +23,7 @@ public class PermissionsController : ControllerBase
                 CanBlogOwner = entry.Value[(int)Role.BlogOwner] == 'X'
             });
         }
-
         return Ok(permissionsList);
     }
+
 }

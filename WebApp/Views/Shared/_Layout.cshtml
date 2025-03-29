@@ -12,8 +12,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    @* <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap-grid.min.css" /> *@
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
     <!-- Font Awesome icons (free version)-->
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <!-- Google fonts-->
@@ -36,7 +36,7 @@
     @if (TempData[Constants.MessageType.Warning] is not null)
     {
         <div class="fixed-bottom container p-3">
-            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <div class="alert alert-wa alert-dismissible fade show" role="alert">
                 @TempData[Constants.MessageType.Warning]
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -65,8 +65,8 @@
     <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
         <div class="container px-4 px-lg-5">
             <a class="navbar-brand"
-               asp-controller="@nameof(HomeController)[..^10]"
-               asp-action="@nameof(HomeController.Index)">
+            asp-controller="@nameof(HomeController)[..^10]"
+            asp-action="@nameof(HomeController.Index)">
                 Just Blog
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,23 +75,60 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarResponsive">
                 <ul class="navbar-nav ms-auto py-4 py-lg-0">
-                    @if (authorizerService.HasPermission(User.FindFirst(ClaimTypes.Role)?.Value, ModuleAction.IndexUser))
+                    @if (authorizerService.HasPermission(ModuleAction.IndexUser))
                     {
                         <li class="nav-item">
                             <a class="nav-link px-lg-3 py-3 py-lg-4"
-                               asp-controller="@nameof(UserController)[..^10]"
-                               asp-action="@nameof(UserController.Index)">
+                            asp-controller="@nameof(UserController)[..^10]"
+                            asp-action="@nameof(UserController.Index)">
                                 Users
                             </a>
                         </li>
                     }
-                    @* <li class="nav-item">
-                    @*     <a class="nav-link px-lg-3 py-3 py-lg-4"
-                    @*        asp-controller="@nameof(BlogController)[..^10]" *@
-                    @*        asp-action="@nameof(BlogController.Index)"> *@
-                    @*         Blogs *@
-                    @*     </a> *@
-                    @* </li> *@
+                    @if (authorizerService.HasPermission(ModuleAction.IndexBlog))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link px-lg-3 py-3 py-lg-4"
+                               asp-controller="@nameof(BlogController)[..^10]"
+                               asp-action="@nameof(BlogController.Index)">
+                                Blogs
+                            </a>
+                        </li>
+                    }
+
+                    @if (authorizerService.HasPermission(ModuleAction.IndexCategory))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link px-lg-3 py-3 py-lg-4"
+                               asp-controller="@nameof(CategoryController)[..^10]"
+                               asp-action="@nameof(CategoryController.Index)">
+                                Categories
+                            </a>
+                        </li>
+                    }
+
+                    @if (authorizerService.HasPermission(ModuleAction.IndexTag))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link px-lg-3 py-3 py-lg-4"
+                               asp-controller="@nameof(TagController)[..^10]"
+                               asp-action="@nameof(TagController.Index)">
+                                Tags
+                            </a>
+                        </li>
+                    }
+
+                    @if (authorizerService.HasPermission(ModuleAction.IndexPost))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link px-lg-3 py-3 py-lg-4"
+                               asp-controller="@nameof(PostController)[..^10]"
+                               asp-action="@nameof(PostController.Index)">
+                                Posts
+                            </a>
+                        </li>
+                    }
+
                     @if (User.Identity!.IsAuthenticated)
                     {
                         <li class="nav-item">
@@ -120,7 +157,7 @@
 
     @RenderBody()
 
-    <footer class="border-top">
+    <footer class="border-top mt-5">
         <div class="container px-4 px-lg-5">
             <div class="row gx-4 gx-lg-5 justify-content-center">
                 <div class="col-md-10 col-lg-8 col-xl-7">

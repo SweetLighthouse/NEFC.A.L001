@@ -1,0 +1,160 @@
+﻿@using System.Security.Claims
+@using FA.Application.Dtos.CategoryDtos
+@using FA.Domain.Enumerations
+@using WebApp.Controllers
+@using WebApp.Services
+@model CategoryDetailDto
+@inject AuthorizerService authorizerService
+
+@{
+    ViewData["Title"] = "Details";
+}
+<!-- Page Header-->
+<header class="masthead">
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="post-heading">
+
+
+                    <h1>@Model.Name</h1>
+
+                    <h2 class="subheading">@Model.Description</h2>
+
+                    <span class="meta mt-1">
+                        Created by
+                            <partial name="_CreatorUserLink" model="Model"></partial>
+                        on @Model.CreatedAt
+                    </span>
+
+                    <span class="meta mt-1">
+                        Last updated by
+                            <partial name="_UpdatorUserLink" model="Model"></partial>
+                        on @Model.UpdatedAt
+                    </span>
+
+                    <div class="mt-2">
+
+                        @if (authorizerService.HasPermission(ModuleAction.UpdateCategory))
+                        {
+                            <a asp-controller="@nameof(CategoryController)[..^10]"
+                            asp-action="@nameof(CategoryController.Edit)"
+                            asp-route-id="@Model.Id"
+                            class="btn btn-warning">
+                                Edit
+                            </a>
+                        }
+
+                        @if (authorizerService.HasPermission(ModuleAction.DeleteCategory))
+                        {
+                            <a asp-controller="@nameof(CategoryController)[..^10]"
+                            asp-action="@nameof(CategoryController.Delete)"
+                            asp-route-id="@Model.Id"
+                            class="btn btn-danger">
+                                Delete
+                            </a>
+                        }
+
+                        <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content-->
+<div class="container px-4 px-lg-5 mb-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-7">
+
+            <!-- Real Content -->
+
+            @foreach(var post in Model.Posts)
+            {
+                <div class="post-preview">
+
+                    <a asp-controller="@nameof(BlogController)[..^10]"
+                       asp-action="@nameof(BlogController.Details)"
+                       asp-route-id="@post.Blog.Id">
+                        @* <h2 class="post-title"></h2> *@
+                        <h3 class="mb-1 mt-3 post-subtitle">@post.Blog.Name</h3>
+                    </a>
+
+                    <a asp-controller="@nameof(PostController)[..^10]"
+                       asp-action="@nameof(PostController.Details)"
+                       asp-route-id="@post.Id">
+                        <h2 class="mt-0 post-title">@post.Title</h2>
+                        @* <h3 class="post-subtitle"></h3> *@
+                    </a>
+
+                    <div>
+                        <span class="post-meta">Categories:</span>
+                        <span class="post-meta">
+                            @foreach (var category in post.Categories)
+                            {
+                                <a asp-controller="@nameof(CategoryController)[..^10]"
+                                   asp-action="@nameof(CategoryController.Details)"
+                                   asp-route-id="@category.Id">
+                                    <span class="badge bg-secondary">@category.Name</span>
+                                </a>
+                            }
+                        </span>
+                    </div>
+
+                    <div>
+                        <span class="post-meta">Tags:</span>
+                        <span class="post-meta">
+                            @foreach (var tag in post.Tags)
+                            {
+                                <a asp-controller="@nameof(TagController)[..^10]"
+                                   asp-action="@nameof(TagController.Details)"
+                                   asp-route-id="@tag.Id">
+                                    <span class="badge bg-secondary">@tag.Name</span>
+                                </a>
+                            }
+                        </span>
+                    </div>
+
+                    <span class="post-meta">
+                        Created by
+                        <partial name="_CreatorUserLink" model="post"></partial>
+                        on @post.CreatedAt
+                    </span>
+
+
+
+                    <p class="post-meta">
+                        Last updated by
+                        <partial name="_UpdatorUserLink" model="post"></partial>
+                        on @post.UpdatedAt
+                        @if (authorizerService.HasPermission(ModuleAction.UpdatePost))
+                        {
+                            <a asp-controller="@nameof(PostController)[..^10]"
+                               asp-action="@nameof(PostController.Edit)"
+                               asp-route-id="@post.Id"
+                               class="link-warning">
+                                Edit
+                            </a>
+                        }
+
+                        @if (authorizerService.HasPermission(ModuleAction.DeletePost))
+                        {
+                            <a asp-controller="@nameof(PostController)[..^10]"
+                               asp-action="@nameof(PostController.Delete)"
+                               asp-route-id="@post.Id"
+                               class="link-danger">
+                                Delete
+                            </a>
+                        }
+                    </p>
+
+                </div>
+                <hr class="my-4">
+            }
+            <!-- End of Real Content -->
+
+        </div>
+    </div>
+</div>

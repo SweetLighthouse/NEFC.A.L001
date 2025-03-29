@@ -1,0 +1,43 @@
+﻿@using FA.Application.Dtos.CategoryDtos
+@using WebApp.Controllers
+@model CategoryDetailDto
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+
+<!-- Page Header-->
+<header class="masthead">
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="site-heading">
+                    <h1>@Model.Name</h1>
+                    <span class="subheading mb-3">Are you sure to delete?</span>
+                    <form asp-controller="@nameof(CategoryController)[..^10]"
+                          asp-action="@nameof(CategoryController.Delete)"
+                          asp-route-id="@Model.Id"
+                          class="mb-2">
+
+                        <partial name="_ReturnUrlHiddenInput" />
+
+                        <button typw="submit" class="btn btn-danger">Delete</button>
+                        <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main Content-->
+<div class="container px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-7">
+
+            <!-- Real Content -->
+            <!-- End of Real Content -->
+
+        </div>
+    </div>
+</div>

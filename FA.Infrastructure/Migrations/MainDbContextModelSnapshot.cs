@@ -34,6 +34,10 @@ namespace FA.Infrastructure.Migrations
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(2014)
+                        .HasColumnType("nvarchar(2014)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -54,7 +58,7 @@ namespace FA.Infrastructure.Migrations
 
                     b.HasIndex("UpdatorId");
 
-                    b.ToTable("Blog", (string)null);
+                    b.ToTable("Blog");
                 });
 
             modelBuilder.Entity("FA.Domain.Entities.Category", b =>
@@ -69,6 +73,10 @@ namespace FA.Infrastructure.Migrations
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -89,7 +97,7 @@ namespace FA.Infrastructure.Migrations
 
                     b.HasIndex("UpdatorId");
 
-                    b.ToTable("Category", (string)null);
+                    b.ToTable("Category");
                 });
 
             modelBuilder.Entity("FA.Domain.Entities.Comment", b =>
@@ -129,7 +137,7 @@ namespace FA.Infrastructure.Migrations
 
                     b.HasIndex("UpdatorId");
 
-                    b.ToTable("Comment", (string)null);
+                    b.ToTable("Comment");
                 });
 
             modelBuilder.Entity("FA.Domain.Entities.Post", b =>
@@ -139,9 +147,6 @@ namespace FA.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("BlogId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Content")
@@ -157,9 +162,6 @@ namespace FA.Infrastructure.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
-
-                    b.Property<double>("Rate")
-                        .HasColumnType("float");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -179,13 +181,26 @@ namespace FA.Infrastructure.Migrations
 
                     b.HasIndex("BlogId");
 
-                    b.HasIndex("CategoryId");
-
                     b.HasIndex("CreatorId");
 
                     b.HasIndex("UpdatorId");
 
-                    b.ToTable("Post", (string)null);
+                    b.ToTable("Post");
+                });
+
+            modelBuilder.Entity("FA.Domain.Entities.PostCategory", b =>
+                {
+                    b.Property<Guid>("PostId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("PostId", "CategoryId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("PostCategory");
                 });
 
             modelBuilder.Entity("FA.Domain.Entities.PostTag", b =>
@@ -200,7 +215,7 @@ namespace FA.Infrastructure.Migrations
 
                     b.HasIndex("TagId");
 
-                    b.ToTable("PostTag", (string)null);
+                    b.ToTable("PostTag");
                 });
 
             modelBuilder.Entity("FA.Domain.Entities.Tag", b =>
@@ -235,7 +250,49 @@ namespace FA.Infrastructure.Migrations
 
                     b.HasIndex("UpdatorId");
 
-                    b.ToTable("Tag", (string)null);
+                    b.ToTable("Tag");
+                });
+
+            modelBuilder.Entity("FA.Domain.Entities.UploadFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Extension")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UpdatorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
+
+                    b.HasIndex("UpdatorId");
+
+                    b.ToTable("UploadFile");
                 });
 
             modelBuilder.Entity("FA.Domain.Entities.User", b =>
@@ -277,7 +334,8 @@ namespace FA.Infrastructure.Migrations
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -288,7 +346,7 @@ namespace FA.Infrastructure.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("User", (string)null);
+                    b.ToTable("User");
                 });
 
             modelBuilder.Entity("FA.Domain.Entities.Blog", b =>
@@ -364,12 +422,6 @@ namespace FA.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("FA.Domain.Entities.Category", "Category")
-                        .WithMany("Posts")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("FA.Domain.Entities.User", "Creator")
                         .WithMany("PostsICreated")
                         .HasForeignKey("CreatorId")
@@ -384,11 +436,26 @@ namespace FA.Infrastructure.Migrations
 
                     b.Navigation("Blog");
 
-                    b.Navigation("Category");
-
                     b.Navigation("Creator");
 
                     b.Navigation("Updator");
+                });
+
+            modelBuilder.Entity("FA.Domain.Entities.PostCategory", b =>
+                {
+                    b.HasOne("FA.Domain.Entities.Category", "Category")
+                        .WithMany("PostCategories")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("FA.Domain.Entities.Post", "Post")
+                        .WithMany("PostCategories")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("FA.Domain.Entities.PostTag", b =>
@@ -396,14 +463,12 @@ namespace FA.Infrastructure.Migrations
                     b.HasOne("FA.Domain.Entities.Post", "Post")
                         .WithMany("PostTags")
                         .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("FA.Domain.Entities.Tag", "Tag")
                         .WithMany("PostTags")
                         .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Post");
 
@@ -420,6 +485,25 @@ namespace FA.Infrastructure.Migrations
 
                     b.HasOne("FA.Domain.Entities.User", "Updator")
                         .WithMany("TagsIUpdated")
+                        .HasForeignKey("UpdatorId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
+
+                    b.Navigation("Updator");
+                });
+
+            modelBuilder.Entity("FA.Domain.Entities.UploadFile", b =>
+                {
+                    b.HasOne("FA.Domain.Entities.User", "Creator")
+                        .WithMany("UploadFilesICreated")
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("FA.Domain.Entities.User", "Updator")
+                        .WithMany("UploadFilesIUpdated")
                         .HasForeignKey("UpdatorId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -455,12 +539,14 @@ namespace FA.Infrastructure.Migrations
 
             modelBuilder.Entity("FA.Domain.Entities.Category", b =>
                 {
-                    b.Navigation("Posts");
+                    b.Navigation("PostCategories");
                 });
 
             modelBuilder.Entity("FA.Domain.Entities.Post", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("PostCategories");
 
                     b.Navigation("PostTags");
                 });
@@ -491,6 +577,10 @@ namespace FA.Infrastructure.Migrations
                     b.Navigation("TagsICreated");
 
                     b.Navigation("TagsIUpdated");
+
+                    b.Navigation("UploadFilesICreated");
+
+                    b.Navigation("UploadFilesIUpdated");
 
                     b.Navigation("UsersICreated");
 

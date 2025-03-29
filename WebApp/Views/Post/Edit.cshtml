@@ -1,0 +1,172 @@
+﻿@using FA.Application.Dtos.BaseDtos
+@using FA.Application.Dtos.BlogDtos
+@using FA.Application.Dtos.CategoryDtos
+@using FA.Application.Dtos.PostDtos
+@using WebApp.Commons
+@using WebApp.Controllers
+@model PostUpdateDto
+@inject IHttpClientFactory httpClientFactory
+@{
+    var _httpClient = httpClientFactory.CreateClient(Constants.BackendClientName);
+}
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<!-- Page Header-->
+<header class="masthead">
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="site-heading">
+                    <h1>Edit</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main Content-->
+<div class="container px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-7">
+
+            <!-- Real Content-->
+            <form asp-controller="@nameof(PostController)[..^10]"
+                  asp-action="@nameof(PostController.Edit)"
+                  asp-route-id="@TempData["id"]">
+
+                <partial name="_ReturnUrlHiddenInput" />
+                <input type="hidden" asp-for="UpdatedAt" />
+
+                <div class="form-floating">
+                    @{
+                        var blogs = await _httpClient.GetFromJsonAsync<PageResultDto<BlogIndexDto>>($"{Constants.Api.Blog}?page=1&pageSize=100");
+                    }
+                    <select asp-for="BlogId"
+                            asp-items="@new SelectList(blogs!.Items, nameof(BlogIndexDto.Id), nameof(BlogIndexDto.Name))"
+                            class="form-select border-top-0 border-end-0 border-start-0 ps-0">
+                        <option value="" selected>-- Select Blog --</option>
+                    </select>
+                    <label asp-for="BlogId">Blog</label>
+                </div>
+
+                <div class="form-floating">
+                    <input asp-for="Title" class="form-control" placeholder="..." autofocus>
+                    <label asp-for="Title"></label>
+                </div>
+
+                <div class="form-floating">
+                    <textarea asp-for="Content" class="form-control" placeholder="..." style="height: 30rem"></textarea>
+                    <label asp-for="Content"></label>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <button class="btn btn-primary btn-sm" type="button" id="section">Add section</button>
+                    <button class="btn btn-primary btn-sm" type="button" id="blockquote">Add blockquote</button>
+                    <button class="btn btn-primary btn-sm" type="button" id="img">Add image</button>
+                    <button class="btn btn-primary btn-sm" type="button" id="caption">Add caption</button>
+                    <script>
+                        const content = document.getElementById('content-father').querySelector('textarea')
+
+                        function abc (def) {
+                            content.value += def
+                            content.focus();
+                            content.selectionStart = content.selectionEnd = content.value.length;
+                        }
+
+                        document.getElementById('section').onclick = (e) => {
+                            abc(`<h2 class="section-heading"></h2>`)
+                        }
+                        document.getElementById('blockquote').onclick = (e) => {
+                            abc(`<blockquote class="blockquote"></blockquote>`)
+                        }
+                        document.getElementById('blockquote').onclick = (e) => {
+                            abc(`<span class="caption text-muted"></span>`)
+                        }
+                        document.getElementById('img').onclick = (e) => {
+                            abc(`<img class="img-fluid" src="" alt="">`)
+                        }
+
+                    </script>
+                </div>
+
+                <div class="row mx-0">
+                    <label class="my-2">Categories</label>
+                    @{
+                        var categories = await _httpClient.GetFromJsonAsync<PageResultDto<CategoryIndexDto>>($"{Constants.Api.Category}?page=1&pageSize=100");
+                    }
+                    @foreach (var category in categories!.Items)
+                    {
+                        <div class="form-check col-6 col-lg-4">
+
+                            <input class="form-check-input" type="checkbox" name="@nameof(Model.CategoryIds)" value="@category.Id" id="@category.Id"
+                            @(Model?.CategoryIds != null && Model.CategoryIds.Contains(category.Id) ? "checked" : "") />
+                            <label class="form-check-label" for="@category.Id">@category.Name</label>
+                        </div>
+                    }
+                </div>
+
+                <div class="form-floating">
+                    <input type="text" class="form-control" placeholder="..." id="tagInput">
+                    <label for="tagInput">Type your tag here</label>
+                    <div id="tagHolder" class="d-flex flex-wrap gap-2 mt-2"></div>
+                </div>
+
+                <script>
+                    const input = document.getElementById('tagInput');
+                    const tagsDiv = document.getElementById('tagHolder');
+
+                    // Existing tags from model
+                    const initialTags = @Html.Raw(Json.Serialize(Model?.TagNames ?? new List<string>()));
+
+                    // Function to create a tag element
+                    function createTag(value) {
+                        const tag = document.createElement('span');
+                        tag.className = 'badge bg-primary d-flex align-items-center position-relative';
+                        tag.textContent = value;
+
+                        const closeBtn = document.createElement('button');
+                        closeBtn.type = 'button';
+                        closeBtn.className = 'btn-close btn-close-white btn-sm ms-2';
+                        closeBtn.setAttribute('aria-label', 'Close');
+                        closeBtn.addEventListener('click', () => tag.remove());
+
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'TagNames';
+                        hiddenInput.value = value;
+
+                        tag.appendChild(closeBtn);
+                        tag.appendChild(hiddenInput);
+                        tagsDiv.appendChild(tag);
+                    }
+
+                    // Render initial tags from server
+                    initialTags.forEach(createTag);
+
+                    // Handle Enter key
+                    input.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const value = input.value.trim();
+                            if (!value) return;
+                            createTag(value);
+                            input.value = '';
+                        }
+                    });
+                </script>
+
+                <br />
+
+                <div class="form-floating">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
+                </div>
+            </form>
+
+            <!-- End of Real Content-->
+
+        </div>
+    </div>
+</div>
